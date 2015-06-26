@@ -1,1 +1,2 @@
-Hi, This is my second file
+Hi, This is my second file.
+Editing second file
