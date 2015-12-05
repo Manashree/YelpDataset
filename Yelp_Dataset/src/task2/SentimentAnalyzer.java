@@ -8,7 +8,8 @@ import java.util.Set;
 
 public class SentimentAnalyzer {
 	
-	public static void analyzeSentence() throws IOException, InterruptedException{
+	// Below method calls the CoreNLP parser to generate the output .xml file
+	public static void analyzeSentence(boolean msgYN) throws IOException, InterruptedException{
 		ProcessBuilder pb = new ProcessBuilder("java", "-cp", "*", "-Xmx2g", "edu.stanford.nlp.pipeline.StanfordCoreNLP", 
                                                "-props", "config.properties", "-file", "input.txt");
 		
@@ -17,17 +18,21 @@ public class SentimentAnalyzer {
 
 		int errCode = process.waitFor();
 		if(errCode!=0)
-			System.out.println("Error Analyzing Sentence...");
-		else
-			System.out.println("Review parsed successfully");
+		   System.out.println("Error Analyzing Sentence...");
+		else if(msgYN)
+		       System.out.println("Review parsed successfully");
 	}
 	
+	
+	// Below method creates the input file to be given to the CoreNLP parser
 	public static void createNLPInputFile(String business_id) throws IOException, InterruptedException{
 		FileWriter fw = new FileWriter("C:\\Users\\Shrijit\\Documents\\IU\\Fall2015\\Advanced NLP\\stanford-corenlp-full-2015-04-20\\input.txt");
 		fw.write(TestData.hashTestReview.get(business_id));
 		fw.close();
 	}
 	
+	
+	// Below method displays the Featues and the Opinions
 	public static void displayOpinionList(String business_id){
 		Set<String> set = XMLParser.hashOpinionList.keySet();
 		Iterator<String> it = set.iterator();
@@ -45,6 +50,8 @@ public class SentimentAnalyzer {
 		}
 	}
 	
+	
+	// Below method performs the recommendation
 	public static void performRecommendation() throws Exception{
 		Set<String> set = TestData.hashTestReview.keySet();
 		Iterator<String> it = set.iterator();
@@ -54,15 +61,15 @@ public class SentimentAnalyzer {
 		
 		while(it.hasNext()){
 			String business_id = it.next();
-			createNLPInputFile(business_id);
+			createNLPInputFile(business_id);  // creates the input file for NLP parser
 			
 			System.out.println("Parsing the review for business id: "+business_id);
-			analyzeSentence();
+			analyzeSentence(true);  // calls the NLP parser to generate the output(input.txt.xml) file
 			File file = new File("C:\\Users\\Shrijit\\Documents\\IU\\Fall2015\\Advanced NLP\\stanford-corenlp-full-2015-04-20\\input.txt.xml");
-			XMLParser.parseXML(file, true);
+			XMLParser.parseXML(file, true); // parses the xml file and generates the features and sentiments
 			
 			displayOpinionList(business_id);
-			RecommendItems.identifySentence(XMLParser.words, XMLParser.hashOpinionList);
+			RecommendItems.identifySentence(XMLParser.words, XMLParser.hashOpinionList, null); // builds list of recommended and non-recommend features
 			
 			System.out.println("------------------------");
 			XMLParser.hashOpinionList.clear();

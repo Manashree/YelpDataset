@@ -16,10 +16,14 @@ public class RecommendItems {
     private static final String NOT = "not";
     private static final int WORD_DISTANCE = 4;
     private static Set<String> negativeAdj;
+    private static HashMap<String, Set<String>> hashRecBusList; 
+    private static HashMap<String, Set<String>> hashNonRecBusList; 
     
     static void init() throws FileNotFoundException {
     	curDir = System.getProperty("user.dir");
         negativeAdj = new HashSet<String>();
+        hashRecBusList = new HashMap<String, Set<String>>();
+        hashNonRecBusList = new HashMap<String, Set<String>>();
         setupNegAdjectives();
     }
     
@@ -27,6 +31,15 @@ public class RecommendItems {
     	return negativeAdj;
     }
     
+    public static HashMap<String, Set<String>> getHashRecBusList(){
+    	return hashRecBusList;
+    }
+    
+    public static HashMap<String, Set<String>> getHashNonRecBusList(){
+    	return hashNonRecBusList;
+    }
+    
+    // Below method builds a list of negative adjectives by reading from file containing a list of possible negative adjectives 
     public static void setupNegAdjectives() throws FileNotFoundException {
 
         File f = new File(curDir+"\\corpus1\\NegativeAdjectives.txt");
@@ -45,7 +58,10 @@ public class RecommendItems {
 
      }
 
-    public static void identifySentence(List<String> sentence, HashMap<String, Set<String>> nounToAdjectiveMapping) {
+    
+    // Below method builds a list of Recommended and Non-Recommended features by taking into account ...
+    // the sentiment of the input sentence.
+    public static void identifySentence(List<String> sentence, HashMap<String, Set<String>> nounToAdjectiveMapping, String business_id) {
         int posCount = 0;
         int negCount = 0;
         
@@ -85,8 +101,38 @@ public class RecommendItems {
                 
             }
             	
-            if(posCount > negCount)
-               System.out.println("Recommended: " + entry.getKey());
+            if(posCount > negCount){
+               if(business_id!=null){
+	            	String feature = entry.getKey();
+	            	
+	            	if(!hashRecBusList.containsKey(feature)){
+	  				  Set<String> temp = new HashSet<String>();
+	  				  temp.add(business_id);
+	  				  hashRecBusList.put(feature, temp);
+	  				}
+	  				else{
+	  				  Set<String> temp = hashRecBusList.get(feature);
+	  				  temp.add(business_id);
+	  				  hashRecBusList.put(feature, temp);
+	  				}
+            	}
+               else
+            	System.out.println("Recommended: " + entry.getKey());
+            }
+            else if(business_id!=null){
+            	String feature = entry.getKey();
+            	
+            	if(!hashNonRecBusList.containsKey(feature)){
+  				  Set<String> temp = new HashSet<String>();
+  				  temp.add(business_id);
+  				  hashNonRecBusList.put(feature, temp);
+  				}
+  				else{
+  				  Set<String> temp = hashNonRecBusList.get(feature);
+  				  temp.add(business_id);
+  				  hashNonRecBusList.put(feature, temp);
+  				}
+            }
             
             posCount = 0;
             negCount = 0;

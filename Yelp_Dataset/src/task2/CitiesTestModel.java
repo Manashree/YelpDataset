@@ -1,93 +1,128 @@
 package task2;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-
-import org.json.simple.JSONObject;
 
 public class CitiesTestModel {
 	static String curDir;
-	static HashMap<String, String> hashTestCityReview;
-	static HashMap<String, Set<String>> hashInfluentialFactors;
+	static List<HashMap<String, Integer>> listFeatureFreq;
+	static List<HashMap<String, Set<String>>> listNonRecBus;
+	static List<HashMap<String, Set<String>>> listRecBus;
+	static List<HashMap<String, Float>> listBusinessRating;
+	static List<FeatureObj> listTopFeatureObj;
 	
-	public static void init() throws IOException{
-		hashTestCityReview = new HashMap<String, String>();
-		hashInfluentialFactors = new HashMap<String, Set<String>>();
-		
-		CitiesTrainModel.hashCity = new HashMap<String, String>();
-		CitiesTrainModel.hashBusiness = new HashMap<String, String>();
-		
-		CitiesTrainModel.hashCity.put("Las Vegas", "Las Vegas");
-		CitiesTrainModel.hashCity.put("Phoenix", "Phoenix");
+	public static void init() throws IOException{		
+		listFeatureFreq = new ArrayList<HashMap<String, Integer>>();
+		listNonRecBus = new ArrayList<HashMap<String, Set<String>>>();
+		listRecBus = new ArrayList<HashMap<String, Set<String>>>();
+		listBusinessRating = new ArrayList<HashMap<String, Float>>();
+		listTopFeatureObj = new ArrayList<FeatureObj>();
 	}
 	
-	public static void buildCitiesTestModel(Object obj){
-		JSONObject jObject = (JSONObject)obj;
-		String business_id = jObject.get("business_id") + "";
-		String review = jObject.get("text") + "";
-		
-		if(CitiesTrainModel.hashBusiness.containsKey(business_id))
-			hashTestCityReview.put(business_id, review);
-			
-	}
-	
-	public static void getInfluentialFactors(){
-		Set<String> set = XMLParser.hashOpinionList.keySet();
-		Iterator<String> it = set.iterator();		
-		
-		while(it.hasNext()){
-			String key = it.next();
-			
-			if(CitiesTrainModel.hashModelFeature.containsKey(key)){
-				Set<String> setOpinion = XMLParser.hashOpinionList.get(key);
-				
-				if(!hashInfluentialFactors.containsKey(key))
-			    	hashInfluentialFactors.put(key, setOpinion);
-			    else{
-			      	Set<String> temp = hashInfluentialFactors.get(key);
-			      	temp.addAll(setOpinion);
-			      	hashInfluentialFactors.put(key, temp);
-			    }
-				
-			}
-		}
-		
-	}
-	
-	public static void evalTestReview() throws Exception{
-		Set<String> set = hashTestCityReview.keySet();
+	// Below method sorts the features according to its frequency(number of times it is mentioned in the review)
+	static void getTopFeatures(){
+		Set<String> set = listFeatureFreq.get(0).keySet();
 		Iterator<String> it = set.iterator();
-		int count = 0;
-		String suffix = "th";
 		
 		while(it.hasNext()){
-			if(count>=10)
-				break;
+			String feature = it.next();
+			int freq = listFeatureFreq.get(0).get(feature);
+			FeatureObj fo = new FeatureObj(feature, freq);
+			listTopFeatureObj.add(fo);
+		 }
+		
+		Collections.sort(listTopFeatureObj, new Comparator<FeatureObj>(){
+			@Override
+			public int compare(FeatureObj f1, FeatureObj f2){
+				if(f1.freq == f2.freq)
+					return 0;
+				return f2.freq > f1.freq ? 1 : -1; 
+			}
+		});
 			
-			count++;
-			
-			if(count%10==1)
-				suffix = "st";
-			else if(count%10==2)
-				suffix = "nd";
-			else if(count%10==3)
-				suffix = "rd";
-			else
-				suffix = "th";
-			
-			System.out.println("Parsing "+ count + suffix + " Test Reviews");
-			
-			CitiesTrainModel.writeNLPInputFile(null, hashTestCityReview.get(it.next()));
-			SentimentAnalyzer.analyzeSentence();
-			
-			File file = new File("C:\\Users\\Shrijit\\Documents\\IU\\Fall2015\\Advanced NLP\\"+CitiesTrainModel.getNlpDir()+"\\"+CitiesTrainModel.getNlpOutputFile());
-			XMLParser.parseXML(file, false);
-			getInfluentialFactors();
-			
+	}
+	
+	// Below method shows a comparison of the influential factors in the training model city and the test city
+	static void getInfluentialFactors(){
+		float avgPosRating = 0;
+		float avgNegRating = 0;
+		float netRating = 0;
+		
+		for(int i=0;i<10;i++){
+		   String feature = listTopFeatureObj.get(i).feature;
+		   System.out.println("Feature: "+feature);
+		   HashMap<String, Set<String>> hashCity1RecBusList = listRecBus.get(0);
+		   HashMap<String, Set<String>> hashCity1NonRecBusList = listNonRecBus.get(0);
+		   HashMap<String, Float> hashCity1BusRating = listBusinessRating.get(0);
+		   
+		   HashMap<String, Set<String>> hashCity2RecBusList = listRecBus.get(1);
+		   HashMap<String, Set<String>> hashCity2NonRecBusList = listNonRecBus.get(1);
+		   HashMap<String, Float> hashCity2BusRating = listBusinessRating.get(1);
+		   
+		   if(hashCity1RecBusList.containsKey(feature)){
+			  Set<String> setBusiness = hashCity1RecBusList.get(feature);
+				
+			  for(String business_id : setBusiness){
+				  System.out.println("Madison Rec: "+business_id);
+				  avgPosRating += hashCity1BusRating.get(business_id);
+			  }
+			}
+		   
+		   if(hashCity1NonRecBusList.containsKey(feature)){
+			   Set<String> setBusiness = hashCity1NonRecBusList.get(feature);
+				
+			   for(String business_id : setBusiness){
+				   System.out.println("Madison Non Rec: "+business_id);
+				   avgNegRating += hashCity1BusRating.get(business_id);
+			   }
+		   }
+		   
+		  netRating = avgPosRating - avgNegRating;
+		  System.out.println("Net Rating for Madison: "+netRating);
+		  
+		  avgPosRating = 0;
+		  avgNegRating = 0;
+		  
+		  if(hashCity2RecBusList.containsKey(feature)){
+			  Set<String> setBusiness = hashCity2RecBusList.get(feature);
+				
+			  for(String business_id : setBusiness){
+				  System.out.println("Phoenix Rec: "+business_id);
+				  avgPosRating += hashCity2BusRating.get(business_id);
+			  }
+			}
+		  
+		  if(hashCity2NonRecBusList.containsKey(feature)){
+			  Set<String> setBusiness = hashCity2NonRecBusList.get(feature);
+				
+			  for(String business_id : setBusiness){
+				  System.out.println("Phoenix Non Rec: "+business_id);
+				  avgNegRating += hashCity2BusRating.get(business_id);
+			  }
+		   }
+		  
+		  System.out.println("Net Rating for Phoenix: "+(avgPosRating - avgNegRating));
+		  System.out.println("\n------------------------\n");
 		}
 	}
 	
 }
+
+
+class FeatureObj{
+	String feature;
+	int freq;
+	
+	FeatureObj(String feature, int freq){
+		this.feature = feature;
+		this.freq = freq;
+	}
+}
+
+

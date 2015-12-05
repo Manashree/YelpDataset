@@ -31,10 +31,13 @@ public class XMLParser {
 		words = new ArrayList<String>();
 	}
 	
+	// Below method checks if the feature obtained is related to the restaurant category...
+	// This is done by calling the Task1 method to provide the predicted category...
+	// Predicted categories are looked up in the HashMap of restaurant related categories built earlier to decide if the feature is valid or not
 	static boolean isFeatureValid(String word) throws Exception{
 		int count = 0;
 		EvaluateReview.hashEval.clear();
-		EvaluateReview.evalQuery(word, null);
+		EvaluateReview.evalQuery(word, null, 3);
 
 		Set<String> set = EvaluateReview.hashEval.keySet();
 		Iterator<String> it = set.iterator();
@@ -54,6 +57,8 @@ public class XMLParser {
 		return false;
 	}
 	
+	// Below method checks if a token(word) is a noun(feature) or adjective(sentiment/opinion) and builds...
+	// a HashMap of the features as the key and the opinions as the value
 	static void processTokens(NodeList tokenList, boolean singleOpinion_YN) throws Exception{
 		String feature = "";
 		String opinion = "";
@@ -109,6 +114,8 @@ public class XMLParser {
     	}
 	}
 	
+	// Below method checks for dependencies between nouns and adjectives to check which adjective(sentiment/opinion).. 
+	// is modifying the noun(feature)
 	static void processDependencies(NodeList depList){
 		String feature = "";
 		String opinion = "";
@@ -126,6 +133,7 @@ public class XMLParser {
     	}
 	}
 
+	//Below method parses the sentence to obtain the tokens and calls the processTokens method...
 	static void parseXML(File file, boolean depYN) throws Exception{
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();

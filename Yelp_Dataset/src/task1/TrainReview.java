@@ -5,16 +5,11 @@ package task1;
  */
 
 import java.nio.file.Paths;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.lucene.document.Document; 
 import org.apache.lucene.analysis.Analyzer;
@@ -26,7 +21,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 
 public class TrainReview {
@@ -37,11 +31,9 @@ public class TrainReview {
 	static String curDir;
 	static HashMap<String, List<String>> hashCategory;
 	static HashMap<String, String> hashReview;
-
 	static int maxDocs;
 
-	
-	static void initSetUp() throws IOException{
+	public static void initSetUp() throws IOException{
 	    curDir = System.getProperty("user.dir");  
 		reader = DirectoryReader.open(FSDirectory.open(Paths.get(curDir+"\\review_training.json")));
 		searcher = new IndexSearcher(reader);
@@ -52,8 +44,20 @@ public class TrainReview {
 		maxDocs = reader.maxDoc();
      }
 	
+	public static IndexSearcher getIndexSearcher(){
+		return searcher;
+	}
 	
-	static void buildHashCategory(Object obj) throws Exception{ //Called from parseJsonFile in Task1.java
+	public static IndexReader getIndexReader(){
+		return reader;
+	}
+	
+	public static int getMaxDocs(){
+		return maxDocs;
+	}
+	
+	// Below method builds a HashMap with key as the business id and the value as a list of its corresponding categories
+	public static void buildHashCategory(Object obj) throws Exception{ 
 	    String business_id = "";
 	    List<String> list = new ArrayList<String>();
 	    
@@ -68,8 +72,8 @@ public class TrainReview {
 		hashCategory.put(business_id, list);
 	}
 		   
-		
-	static void buildHashReview() throws Exception{	
+	// Below method builds a HashMap with category as the key and its corresponding review as the value	
+	public static void buildHashReview() throws Exception{	
 		String business_id = "";
 		String review = "";
 		
@@ -95,11 +99,11 @@ public class TrainReview {
 		
 	}
 	
-	
-	static void buildDataModel() throws Exception{
+	// Below method builds the training model from the input json file
+	public static void buildDataModel() throws Exception{
 		String fileName = curDir+"\\corpus1\\business_training.json";
 		File file = new File(fileName);
-		Task1IR.parseJsonFile(file, false);
+		Task1IR.parseJsonFile(file, 2, null);
 	   
 		buildHashReview();  // Hash of category to its review
 		reader.close();

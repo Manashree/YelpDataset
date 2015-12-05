@@ -15,6 +15,7 @@ public class TestData {
 	static HashMap<String, String> hashCat;
 	static HashMap<String, String> hashBusiness;
 	static HashMap<String, String> hashTestReview;
+	final static String restaurantCategoryFile = "categories.txt";
 	
 	static void init(){
 		curDir = System.getProperty("user.dir");
@@ -34,8 +35,9 @@ public class TestData {
 		parseJsonFile(file);
 	}
 	
+	//Below method reads from categories.txt and puts the categories in a HashMap
 	static void buildHashCat() throws Exception{
-		FileReader fr = new FileReader(curDir+"\\corpus1\\categories.txt");
+		FileReader fr = new FileReader(curDir+"\\corpus1\\"+restaurantCategoryFile);
 		BufferedReader br = new BufferedReader(fr);
 		String s = "";
 		
@@ -46,6 +48,8 @@ public class TestData {
 		
 	}
 	
+	// Below method reads business json records with review count less than or equal to 5...
+	// The algorithm is tested on businesses with less reviews in order to check its prediction quality  
 	static void buildHashBusiness(Object obj) throws Exception{
 		JSONObject jObject = (JSONObject)obj;
 		Integer review_count = Integer.parseInt(jObject.get("review_count")+"");
@@ -64,6 +68,7 @@ public class TestData {
 		
 	}
 	
+	// Below method builds a HashMap with the business as the key and the review as the value for testing purpose
 	static void buildTestReview(Object obj) throws Exception{
 		JSONObject jObject = (JSONObject)obj;
 		String business_id = jObject.get("business_id") + "";
