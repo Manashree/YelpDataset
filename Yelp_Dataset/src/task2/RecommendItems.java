@@ -64,7 +64,7 @@ public class RecommendItems {
 
      }
 
-    
+    // ** Core Method ** 
     // Below method builds a list of Recommended and Non-Recommended features by taking into account ...
     // the sentiment of the input sentence.
     public static void identifySentence(List<String> sentence, HashMap<String, Set<String>> nounToAdjectiveMapping, String business_id) {

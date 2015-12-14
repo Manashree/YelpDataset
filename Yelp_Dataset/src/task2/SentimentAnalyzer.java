@@ -62,8 +62,9 @@ public class SentimentAnalyzer {
 		}
 	}
 	
-	
-	// Below method performs the recommendation
+	// ** Core Method **
+	// Below method creates input file for CoreNLP, sends it to the parser for parsing, parses the output .xml file...
+	// and then performs the recommendation by calling RecommendItems.identifySentence method
 	public static void performRecommendation() throws Exception{
 		Set<String> set = TestData.hashTestReview.keySet();
 		Iterator<String> it = set.iterator();
