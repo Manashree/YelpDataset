@@ -47,8 +47,6 @@ public class XMLParser {
 			
 			if(TestData.hashCat.containsKey(category)){
 				count++;
-				/*if(word.equals("I"))
-				   System.out.println("Count: "+count+", Category: "+category);*/
 				if(count>=2)
 				  return true;
 			}
@@ -72,8 +70,7 @@ public class XMLParser {
     		if(POS.equals("NN") || POS.equals("NNS")){
     		   result = isFeatureValid(word);
     		   
-    		   if(result){
-    			 //System.out.println("Feature: "+word);  
+    		   if(result){ 
     			 feature = word;
     		   }
     		}
@@ -88,25 +85,19 @@ public class XMLParser {
     		  else
     			  hashFeatureFreq.put(feature, hashFeatureFreq.get(feature)+1);
     		  
-    		  /*if(singleOpinion_YN){
-    		    hashFeature.put(feature, opinion);
-    		    System.out.println("Feature: "+feature+", Opinion: "+opinion);
-    		  }
-    		  else{*/ 
-    			  if(!hashOpinionList.containsKey(feature)){
-    				  Set<String> temp = new HashSet<String>(); 
-    				  temp.add(opinion);
-    				  hashOpinionList.put(feature, temp);
-    			   }
-    			  else{
-    				  Set<String> temp = hashOpinionList.get(feature);
-    				  temp.add(opinion);
-    				  hashOpinionList.put(feature, temp);
-    			  }
+ 
+    		  if(!hashOpinionList.containsKey(feature)){
+    		     Set<String> temp = new HashSet<String>(); 
+    		     temp.add(opinion);
+    		     hashOpinionList.put(feature, temp);
+    		   }
+    		  else{
+    			    Set<String> temp = hashOpinionList.get(feature);
+    				temp.add(opinion);
+    				hashOpinionList.put(feature, temp);
+    		   }
     				  
-    		  //}
-    			  
-			  feature = "";
+    		  feature = "";
     		  opinion = "";
     		}
     		
@@ -149,12 +140,12 @@ public class XMLParser {
         	
         	processTokens(tokenList, depYN);
         	
-        	/*if(depYN){
+        	if(depYN){
         	  Element depElement = (Element)senElement.getElementsByTagName("dependencies").item(0);
         	  NodeList depList = depElement.getElementsByTagName("dep");
               processDependencies(depList);
-        	}*/
-         }
+        	}
+        }
 	}
 
 }

@@ -44,9 +44,6 @@ public class Task1IR {
 			     case 4: CitiesTrainModel.buildHashBusiness(obj);        
 			             break;
 			             
-			     /*case 5: CitiesTestModel.buildCitiesTestModel(obj);
-			             break;*/
-			             
 			     default: System.out.println("Valid option not provided");        
 			   }
 		    }
@@ -58,7 +55,7 @@ public class Task1IR {
 
 	}
 	
-	
+	// Below method calculates the Evaluation Metrics
 	public static void getEvalMetrics(String algo, int noTopDocs) throws IOException{
 		FileWriter fw = new FileWriter("C:\\Users\\Shrijit\\Desktop\\"+algo+"_"+noTopDocs+".txt");
 		
@@ -108,6 +105,7 @@ public class Task1IR {
 		  EvaluateReview.evalAlgos("L",i);  // LMDirichlet Similarity with Top 3, 5 and 7 categories
 		  getEvalMetrics("L",i);
 		}
+		
 		
 	}
 	

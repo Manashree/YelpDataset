@@ -2,22 +2,30 @@ package task2;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.HashMap;
 
 // Implementation class
 public class Task2Cities {
+	static List<String> listCity;
 	
 	public static void init() throws Exception{
+		listCity = new ArrayList<String>();
+		
 		CitiesTrainModel.buildSetup();
 		RecommendItems.init();
 		CitiesTestModel.init();
 		RecommendItems.setupNegAdjectives();
 		modifyNlpConfigFile();
+		
+		listCity.add("Madison");
+		listCity.add("Phoenix");
+		listCity.add("LasVegas");
 	}
 	
 	public static void resetHashMaps(){
-		CitiesTrainModel.hashCity.clear();
 		CitiesTrainModel.hashBusiness.clear();
 		CitiesTrainModel.hashBusinessReview.clear();
 		XMLParser.hashOpinionList.clear();
@@ -26,6 +34,15 @@ public class Task2Cities {
 		RecommendItems.getHashNonRecBusList().clear();
 	}
 	
+	public static void clearLists(){
+		CitiesTestModel.listFeatureFreq.clear();
+		CitiesTestModel.listNonRecBus.clear();
+		CitiesTestModel.listRecBus.clear();
+		CitiesTestModel.listBusinessRating.clear();
+	}
+	
+	// Below method modifies the config file of the Stanford Core NLP. Only the required annotators are used.
+	// This speeds up the generation of the output XML file by the parser. 
 	public static void modifyNlpConfigFile() throws IOException{
 		FileWriter fw = new FileWriter("C:\\Users\\Shrijit\\Documents\\IU\\Fall2015\\Advanced NLP\\"+CitiesTrainModel.getNlpDir()+"\\"+CitiesTrainModel.getNlpConfigFile());
 		fw.write("annotators = tokenize, ssplit, pos");
@@ -40,60 +57,36 @@ public class Task2Cities {
 		CitiesTestModel.listBusinessRating.add((HashMap<String, Float>) CitiesTrainModel.hashBusiness.clone());
 	}
 	
-	/*public static void displayRecFeatures(){
+	public static void displayRecFeatures(FileWriter fw) throws IOException{
 		List<FeatureObj> set = CitiesTestModel.listTopFeatureObj;
 		
 		for(FeatureObj f : set){
+			fw.write(f.feature+"\n");
 			System.out.println(f.feature);
 		}
-	}*/
+	}
 	
 	public static void main(String args[]) throws Exception{
 		
 		System.out.println("Initializing Training Model...");
 		init();
 		
-		FileWriter fw = new FileWriter(CitiesTrainModel.curDir+"\\corpus1\\restaurants.json");
-		CitiesTrainModel.extractRecords("business_training.json", 3, fw);
-		fw.close();
+		for(String city : listCity){
+		  FileWriter fw = new FileWriter(CitiesTrainModel.curDir+"\\"+city+"_TopFeatures.txt");
+	      CitiesTrainModel.extractRecords(city+".json", 4, null);
+		  CitiesTrainModel.buildFeatureList();
+		  
+		  saveCityInfo();
 		
-		CitiesTrainModel.extractRecords("restaurants.json", 4, null);
-		System.out.println("Hash Business Size: "+CitiesTrainModel.hashBusiness.size());
+		  CitiesTestModel.getTopFeatures();
+		  displayRecFeatures(fw);
 		
-		CitiesTrainModel.buildBusinessReview();
-		CitiesTrainModel.buildFeatureList();
+		  clearLists();
+		  fw.close();
+		}
 		
-		//System.out.println("hashBusinessReview size: "+CitiesTrainModel.hashBusinessReview.size());
-		//System.out.println("Freq Feature Size: "+XMLParser.hashFeatureFreq.size());
-		
-		saveCityInfo();
-		
-		//System.out.println("City1 Rec Size: "+RecommendItems.getHashRecBusList().size());
-		//System.out.println("City1 Non Rec Size: "+RecommendItems.getHashNonRecBusList().size());
-		
-		resetHashMaps();
-		
-		//System.out.println("Feat Size: "+CitiesTestModel.listFeatureFreq.get(0).size());
-		
-		CitiesTrainModel.hashCity.clear();
-		CitiesTrainModel.hashCity.put("Phoenix", "Phoenix");
-		
-		CitiesTrainModel.extractRecords("restaurants.json", 4, null);
-		//System.out.println("Hash Business2 Size: "+CitiesTrainModel.hashBusiness.size());
-		CitiesTrainModel.buildBusinessReview();
-		CitiesTrainModel.buildFeatureList();
-		
-		//System.out.println("hashBusinessReview2 size: "+CitiesTrainModel.hashBusinessReview.size());
-		//System.out.println("Freq Feature2 Size: "+XMLParser.hashFeatureFreq.size());
-		
-		saveCityInfo();
-		
-		//System.out.println("City2 Rec Size: "+RecommendItems.getHashRecBusList().size());
-		//System.out.println("City2 Non Rec Size: "+RecommendItems.getHashNonRecBusList().size());
-		
-		CitiesTestModel.getTopFeatures();
-		//displayRecFeatures();
-		CitiesTestModel.getInfluentialFactors();		
+		// After getting the top features, the features were re-ranked using the formula discussed in the slides
+		// The re-ranking and the evaluation is done offline
 		
 	}
 }

@@ -17,13 +17,15 @@ public class RecommendItems {
     private static final int WORD_DISTANCE = 4;
     private static Set<String> negativeAdj;
     private static HashMap<String, Set<String>> hashRecBusList; 
-    private static HashMap<String, Set<String>> hashNonRecBusList; 
+    private static HashMap<String, Set<String>> hashNonRecBusList;
+    private static Set<String> setRec;
     
     static void init() throws FileNotFoundException {
     	curDir = System.getProperty("user.dir");
         negativeAdj = new HashSet<String>();
         hashRecBusList = new HashMap<String, Set<String>>();
         hashNonRecBusList = new HashMap<String, Set<String>>();
+        setRec = new HashSet<String>();
         setupNegAdjectives();
     }
     
@@ -37,6 +39,10 @@ public class RecommendItems {
     
     public static HashMap<String, Set<String>> getHashNonRecBusList(){
     	return hashNonRecBusList;
+    }
+    
+    public static Set<String> getSetRec(){
+    	return setRec;
     }
     
     // Below method builds a list of negative adjectives by reading from file containing a list of possible negative adjectives 
@@ -116,8 +122,10 @@ public class RecommendItems {
 	  				  hashRecBusList.put(feature, temp);
 	  				}
             	}
-               else
-            	System.out.println("Recommended: " + entry.getKey());
+               else{
+            	  //System.out.println("Recommended: " + entry.getKey());
+                  setRec.add(entry.getKey());
+               }
             }
             else if(business_id!=null){
             	String feature = entry.getKey();

@@ -3,7 +3,11 @@ package task2;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -15,6 +19,8 @@ public class TestData {
 	static HashMap<String, String> hashCat;
 	static HashMap<String, String> hashBusiness;
 	static HashMap<String, String> hashTestReview;
+	static HashMap<String, String> hashTrainReview;
+	static HashMap<String, List<String>> hashListReview;
 	final static String restaurantCategoryFile = "categories.txt";
 	
 	static void init(){
@@ -22,6 +28,8 @@ public class TestData {
 		hashCat = new HashMap<String, String>();
 		hashBusiness = new HashMap<String, String>();
 		hashTestReview = new HashMap<String, String>();
+		hashTrainReview = new HashMap<String, String>();
+		hashListReview = new HashMap<String, List<String>>();
 	}
 	
 	static void buildSetup() throws Exception{
@@ -68,6 +76,37 @@ public class TestData {
 		
 	}
 	
+	static void buildHashTrainTest(){
+		Set<String> set = hashListReview.keySet();
+		Iterator<String> it = set.iterator();
+		
+		while(it.hasNext()){
+			String business_id = it.next();
+			List<String> list = hashListReview.get(business_id);
+			
+			int train_size = list.size()*2/3;
+			int count = 0;
+			
+			for(String s : list){
+				if(count<train_size){
+			      if(!hashTrainReview.containsKey(business_id))
+					 hashTrainReview.put(business_id, s);
+			      else
+			    	 hashTrainReview.put(business_id, hashTrainReview.get(business_id) + " " + s);
+				 }
+				else{
+				  if(!hashTestReview.containsKey(business_id))
+					  hashTestReview.put(business_id, s);
+				   else
+				      hashTestReview.put(business_id, hashTestReview.get(business_id) + " " + s);
+				}
+				
+				count++;
+			}
+			
+		}
+	}
+	
 	// Below method builds a HashMap with the business as the key and the review as the value for testing purpose
 	static void buildTestReview(Object obj) throws Exception{
 		JSONObject jObject = (JSONObject)obj;
@@ -75,10 +114,20 @@ public class TestData {
 		String review = jObject.get("text") + "";
 		
 		if(hashBusiness.containsKey(business_id)){
-			if(!hashTestReview.containsKey(business_id))
+			if(!hashListReview.containsKey(business_id)){
+				List<String> list = new ArrayList<String>();
+				list.add(review);
+				hashListReview.put(business_id, list);
+			}
+			else{
+				List<String> list = hashListReview.get(business_id);
+				list.add(review);
+				hashListReview.put(business_id, list);
+			}
+			/*if(!hashTestReview.containsKey(business_id))
 			   hashTestReview.put(business_id, review);
 			else
-			   hashTestReview.put(business_id, hashTestReview.get(business_id)+" "+review);
+			   hashTestReview.put(business_id, hashTestReview.get(business_id)+" "+review);*/
 		}
 		
 	}

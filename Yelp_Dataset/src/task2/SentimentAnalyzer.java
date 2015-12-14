@@ -3,6 +3,7 @@ package task2;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -25,9 +26,13 @@ public class SentimentAnalyzer {
 	
 	
 	// Below method creates the input file to be given to the CoreNLP parser
-	public static void createNLPInputFile(String business_id) throws IOException, InterruptedException{
+	public static void createNLPInputFile(String business_id, String type) throws IOException, InterruptedException{
 		FileWriter fw = new FileWriter("C:\\Users\\Shrijit\\Documents\\IU\\Fall2015\\Advanced NLP\\stanford-corenlp-full-2015-04-20\\input.txt");
-		fw.write(TestData.hashTestReview.get(business_id));
+		
+		if(type.equals("train"))
+		   fw.write(TestData.hashTrainReview.get(business_id));
+		else
+		   fw.write(TestData.hashTestReview.get(business_id));
 		fw.close();
 	}
 	
@@ -50,6 +55,13 @@ public class SentimentAnalyzer {
 		}
 	}
 	
+	public static void displayRecommendedItems(Set<String> setRecList){
+		Iterator<String> it = setRecList.iterator();
+		while(it.hasNext()){
+			System.out.println("Recommended: "+it.next());
+		}
+	}
+	
 	
 	// Below method performs the recommendation
 	public static void performRecommendation() throws Exception{
@@ -61,17 +73,44 @@ public class SentimentAnalyzer {
 		
 		while(it.hasNext()){
 			String business_id = it.next();
-			createNLPInputFile(business_id);  // creates the input file for NLP parser
+			createNLPInputFile(business_id, "train");  // creates the input file for NLP parser to get recommended features from training set...
+			                                           // This corresponds to 60% of reviews for the given business id
 			
 			System.out.println("Parsing the review for business id: "+business_id);
-			analyzeSentence(true);  // calls the NLP parser to generate the output(input.txt.xml) file
+			analyzeSentence(false);  // calls the NLP parser to generate the output(input.txt.xml) file
 			File file = new File("C:\\Users\\Shrijit\\Documents\\IU\\Fall2015\\Advanced NLP\\stanford-corenlp-full-2015-04-20\\input.txt.xml");
 			XMLParser.parseXML(file, true); // parses the xml file and generates the features and sentiments
 			
 			displayOpinionList(business_id);
 			RecommendItems.identifySentence(XMLParser.words, XMLParser.hashOpinionList, null); // builds list of recommended and non-recommend features
 			
+			Set<String> setRec = RecommendItems.getSetRec();
+			displayRecommendedItems(setRec);
+			
+			Set<String> tempSetRec = new HashSet<String>(setRec);
+			setRec.clear();
+			
 			System.out.println("------------------------");
+			XMLParser.hashOpinionList.clear();
+			
+            createNLPInputFile(business_id, "test");  // creates the input file for NLP parser to get recommended features from training set...
+            										  // This corresponds to 40% of reviews for the given business id
+		
+			analyzeSentence(false);  // calls the NLP parser to generate the output(input.txt.xml) file
+			file = new File("C:\\Users\\Shrijit\\Documents\\IU\\Fall2015\\Advanced NLP\\stanford-corenlp-full-2015-04-20\\input.txt.xml");
+			XMLParser.parseXML(file, true); // parses the xml file and generates the features and sentiments
+			
+			RecommendItems.identifySentence(XMLParser.words, XMLParser.hashOpinionList, null); // builds list of recommended and non-recommend features
+			
+			setRec = RecommendItems.getSetRec();
+			
+			Task2RecommendItems.calcTruePos(setRec, tempSetRec);
+			Task2RecommendItems.setPredictedFeatures(setRec.size());
+			Task2RecommendItems.setActualFeatures(tempSetRec.size());
+			
+			setRec.clear();
+			tempSetRec.clear();
+			
 			XMLParser.hashOpinionList.clear();
 		}
 	}

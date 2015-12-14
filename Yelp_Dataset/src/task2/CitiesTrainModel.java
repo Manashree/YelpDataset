@@ -26,7 +26,6 @@ public class CitiesTrainModel {
 	final static int businessReviewCountLimit = 10;
 	static List<String> listCities;
 	static HashMap<String, String> hashCat;
-	static HashMap<String, String> hashCity;
 	static HashMap<String, Float> hashBusiness;
 	static HashMap<String, String> hashBusinessReview;
 	static HashMap<String, Set<String>> hashModelFeature;
@@ -56,17 +55,13 @@ public class CitiesTrainModel {
 	
 	static void init(){
 		curDir = System.getProperty("user.dir");
-		hashCity = new HashMap<String, String>();
 		hashBusinessReview = new HashMap<String, String>();
 		hashCat = new HashMap<String, String>();
 		hashBusiness = new HashMap<String, Float>();
 		hashModelFeature = new HashMap<String, Set<String>>();
 		hashBusFeatureOpinion = new HashMap<String, HashMap<String, Set<String>>>();
 		hashFeatureBusList = new HashMap<String, Set<String>>();
-		hashBusinessReviewCount = new HashMap<String, Integer>();
-		
-		hashCity.put("Madison", "Madison");
-		
+		hashBusinessReviewCount = new HashMap<String, Integer>();		
 	}
 	
 	static void buildSetup() throws Exception{
@@ -118,8 +113,7 @@ public class CitiesTrainModel {
 			hashCat.put(s, s);
 		
 		br.close();
-	}
-	
+	}	
 	
 	//Below method reads from the Lucene index and puts the reviews in the HashMap hashBusinessReview
 	static void buildBusinessReview() throws Exception{
@@ -128,7 +122,7 @@ public class CitiesTrainModel {
 		int endDoc = 500;
 		int reviewCount = 0;
 		
-		while(endDoc <= 50000){
+		while(endDoc <= 800000){
 			for(int docId=startDoc;docId<endDoc;docId++){
 				Document doc = TrainReview.getIndexSearcher().doc(docId);
 				String business_id = doc.get("BUSID");
@@ -178,12 +172,15 @@ public class CitiesTrainModel {
 	public static void buildHashBusiness(Object obj) throws Exception{
 		JSONObject jObject = (JSONObject)obj;
 		String business_id = jObject.get("business_id") + "";
-		String city = jObject.get("city") + "";
 		float rating = Float.parseFloat(jObject.get("stars") + "");
 		
-		if(hashCity.containsKey(city)){
-			hashBusiness.put(business_id, rating);
-		}
+		String review = jObject.get("text") + "";	
+		hashBusiness.put(business_id, rating);
+
+		if(!hashBusinessReview.containsKey(business_id))
+			hashBusinessReview.put(business_id, review);
+		else	
+			hashBusinessReview.put(business_id, hashBusinessReview.get(business_id)+" "+review);
 	}
 	
 	// Below method checks if the record in the data file corresponds to a restaurant 
