@@ -87,8 +87,8 @@ public class TrainReview {
 			
 			for(String category : list_category){	
 				if(hashReview.containsKey(category)){
-				    hashReview.put(category, hashReview.get(category)+". "+review);
-				    //System.out.println(hashReview.get(category));
+				    hashReview.put(category, hashReview.get(category)+". "+review);  // the reviews for the corresponding category are concatenated 
+				    //System.out.println(hashReview.get(category));                   
 				 }
 				else
 				   hashReview.put(category, review);	   

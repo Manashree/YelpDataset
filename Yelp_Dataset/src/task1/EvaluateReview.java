@@ -55,6 +55,9 @@ public class EvaluateReview {
 		hashBusinessReviewCount = new HashMap<String, Integer>();
 	}
 	
+	
+	// Below method concatenates the reviews for each business id...
+	// For each business id, maximum of 5 reviews are concatenated to obtain a good query.. 
 	static void buildTestReview(Object obj){
 		JSONObject jObject = (JSONObject)obj;
 		
