@@ -1,13 +1,11 @@
 package task1;
 
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.io.FileReader;
 import java.io.File;
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
@@ -15,13 +13,11 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField; 
 import org.apache.lucene.document.TextField; 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -30,27 +26,28 @@ public class GenerateIndex {
 	private static String dirPath;
 	private static String fileExt;
     
-	static void buildSetUp(){
+	public static void buildSetUp(){
 		curDir = System.getProperty("user.dir");  
 	}
 	
-	static String getDirPath(){
+	public static String getDirPath(){
 		return dirPath;
 	}
 	
-	static void setDirPath(String path){
+	public static void setDirPath(String path){
 		dirPath = curDir+"\\"+path;
 	}
 	
-	static String getFileExt(){
+	public static String getFileExt(){
 		return fileExt;
 	}
 	
-	static void setFileExt(String ext){
+	public static void setFileExt(String ext){
 		fileExt = ext;
 	}
 	
-	static void indexDoc(Object obj, IndexWriter writer) throws IOException{
+	//Below method build the Lucene Index
+	public static void indexDoc(Object obj, IndexWriter writer) throws IOException{
 		
 		if(!obj.getClass().getName().equals("org.json.simple.JSONObject")){
 			Set<String> set = TrainReview.hashReview.keySet();
@@ -69,16 +66,19 @@ public class GenerateIndex {
 		  JSONObject jObject = (JSONObject)obj;
 		  String business_id = jObject.get("business_id")+"";
 		  String review = jObject.get("text")+"";
+		  String city = jObject.get("city")+"";
 			
 		  luceneDoc.add(new StringField("BUSID", business_id,Field.Store.YES));
 		  luceneDoc.add(new TextField("REVIEW", review,Field.Store.YES));
+		  luceneDoc.add(new TextField("CITY", city,Field.Store.YES));
 		  writer.addDocument(luceneDoc);	
         }
 		
-		
 	}
 	
-	static void parseJsonAndIndex(File file, IndexWriter writer) throws Exception{
+	
+	// Below method parses the input json file 
+	public static void parseJsonAndIndex(File file, IndexWriter writer) throws Exception{
 		FileReader f = new FileReader(file);
 		BufferedReader br = new BufferedReader(f);
 		String s = "";
@@ -93,9 +93,13 @@ public class GenerateIndex {
 			
 		}
 		
+		br.close();
+		
 	}
 	
-	static void genIndex(String dirPath, String fileType, Analyzer analyzer)throws Exception{
+	
+	//Below method calls the above parse method and also the method which generates the Lucene index
+	public static void genIndex(String dirPath, String fileType, Analyzer analyzer)throws Exception{
 		File dataDir = new File(dirPath);
 		File[] files = dataDir.listFiles();
         String indexPath = "";
